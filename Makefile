@@ -14,7 +14,7 @@ DOCDIR = $(PREFIX)/opt/prax/doc
 VERSION = `cat ../VERSION`
 
 #DEB_DEPENDENCIES = "-d 'libpcre3' -d 'libgc1c2' -d 'libunwind8 | libunwind7'"
-DEB_DEPENDENCIES = "-d 'libssl1.0.0'"
+DEB_DEPENDENCIES = "-d 'libssl1.0.0 | libssl1.1'"
 
 SOURCES = $(wildcard src/*.cr) $(wildcard src/**/*.cr)
 
@@ -24,9 +24,10 @@ all: $(SOURCES)
 	mkdir -p bin
 	$(CRYSTAL_BIN) build $(CURDIR)/src/prax.cr -o bin/prax-binary
 
+# --no-debug below is a workaround for this issue: https://github.com/crystal-lang/crystal/issues/4719
 release: $(SOURCES)
 	mkdir -p $(BINDIR)
-	$(CRYSTAL_BIN) build --release $(CURDIR)/src/prax.cr -o $(BINDIR)/prax-binary
+	$(CRYSTAL_BIN) build --release $(CURDIR)/src/prax.cr -o $(BINDIR)/prax-binary --no-debug
 	#strip --strip-uneeded $(BINDIR)/prax-binary
 
 run: all
