@@ -68,7 +68,7 @@ class ProxyTest < Minitest::Test
 
   def test_lowercase_header
     TCPSocket.open("localhost", 20557) do |socket|
-      socket.write("GET / HTTP/1.1\r\nhost: example.dev\r\n\r\n")
+      socket.write("GET / HTTP/1.1\r\nhost: example.localhost\r\n\r\n")
       assert_equal "HTTP/1.1 200 OK\r\n", socket.gets # a lowercase request header is tolerated
     end
   end
