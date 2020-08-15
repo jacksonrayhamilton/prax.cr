@@ -72,4 +72,12 @@ class ProxyTest < Minitest::Test
       assert_equal "HTTP/1.1 200 OK\r\n", socket.gets # a lowercase request header is tolerated
     end
   end
+
+  def test_close_http_1_0_connection_with_body
+    TCPSocket.open("localhost", 20557) do |socket|
+      socket.write("GET / HTTP/1.0\r\nHost: example.localhost\r\n\r\n")
+      # Response body should be present (https://github.com/ysbaddaden/prax.cr/issues/77):
+      assert_equal "HTTP/1.0 200 OK\r\n\r\nexample", socket.gets
+    end
+  end
 end
