@@ -93,7 +93,9 @@ module Prax
       channel = Channel(String).new
       spawner.channel.send({channel, command})
 
-      case message = channel.receive
+      message = channel.receive
+      Prax.logger.debug { "executed command #{command.inspect} and received message #{message.inspect}" }
+      case message
       when "error"
         raise ErrorStartingApplication.new
       when "exception"

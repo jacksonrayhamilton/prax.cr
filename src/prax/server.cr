@@ -22,8 +22,11 @@ module Prax
       # each server accepts connections in its own fiber
       servers.each_with_index do |server, index|
         spawn do
+          Prax.logger.debug { "beginning to handle clients" }
           while socket = server.accept?
+            Prax.logger.debug { "spawning handler for client" }
             spawn handle_client(socket, index == 1)
+            Prax.logger.debug { "spawned handler for client" }
           end
         end
       end
@@ -83,8 +86,10 @@ module Prax
       debug_exception(ex)
 
     ensure
+      Prax.logger.debug { "closing socket" }
       ssl_socket.try(&.close) if ssl_socket
       socket.close
+      Prax.logger.debug { "closed socket" }
     end
 
     private def debug_exception(ex)

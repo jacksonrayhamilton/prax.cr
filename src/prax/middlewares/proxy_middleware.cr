@@ -16,6 +16,7 @@ module Prax
         request, client = handler.request, handler.client
         Prax.logger.debug { "#{request.method} #{request.uri}" }
 
+        Prax.logger.debug { "sending request from client to server" }
         server << "#{request.method} #{request.uri} #{request.http_version}\r\n"
         proxy_headers(request, handler.tcp_socket, handler.ssl?).each(&.to_s(server))
         server << "\r\n"
@@ -23,7 +24,9 @@ module Prax
         if (len = request.content_length) > 0
           copy_stream(client, server, len)
         end
+        Prax.logger.debug { "done sending request from client to server" }
 
+        Prax.logger.debug { "returning response from server to client" }
         response = Parser.new(server).parse_response
         response.to_s(client)
 
@@ -34,8 +37,9 @@ module Prax
         elsif response.header("Connection") == "close"
           copy_stream(server, client)
         else
-          # TODO: read until EOF / connection close?
+          copy_stream(server, client)
         end
+        Prax.logger.debug { "done returning response from server to client" }
       end
 
       # FIXME: should dup the headers to avoid altering the request
@@ -61,23 +65,33 @@ module Prax
       private def copy_stream(input, output, len)
         buffer = uninitialized UInt8[2048]
 
+        Prax.logger.debug { "copying stream" }
         while len > 0
+          Prax.logger.debug { "about to read bytes" }
           count = input.read(buffer.to_slice[0, Math.min(len, buffer.size)])
+          Prax.logger.debug { "read #{count.inspect} bytes" }
           break if count == 0
 
           output.write(buffer.to_slice[0, count])
+          Prax.logger.debug { "wrote #{count.inspect} bytes" }
           len -= count
         end
+        Prax.logger.debug { "finished copying stream" }
       end
 
       private def copy_stream(input, output)
         buffer = uninitialized UInt8[2048]
 
+        Prax.logger.debug { "copying stream" }
         loop do
+          Prax.logger.debug { "about to read bytes" }
           count = input.read(buffer.to_slice[0, buffer.size])
+          Prax.logger.debug { "read #{count.inspect} bytes" }
           break if count == 0
           output.write(buffer.to_slice[0, count])
+          Prax.logger.debug { "wrote #{count.inspect} bytes" }
         end
+        Prax.logger.debug { "finished copying stream" }
       end
     end
   end
